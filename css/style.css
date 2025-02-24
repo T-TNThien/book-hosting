@@ -1,0 +1,49 @@
+#logo {
+    max-width: 75px;
+}
+
+h2 {
+    color: #dddddd;
+    padding: 20px;
+}
+
+.text-current {
+    color: #ce2828 !important;
+}
+
+.nav-link:hover {
+    color: #ce2828 !important;
+}
+
+.carousel-item-content {
+    display: flex;
+    align-items: center;
+}
+
+.carousel-item-content img {
+    width: 30% !important;
+    border-radius: 10px;
+}
+
+.carousel-caption {
+    width: 70%;
+    text-align: left;
+    position: static !important;
+    padding: 20px;
+}
+
+.carousel-control-prev, .carousel-control-next {
+    position: absolute;
+    bottom: 10px;
+    top: auto;
+}
+
+.carousel-control-prev {
+    right: 100px;
+    left: auto;
+}
+
+.carousel-control-next {
+    right: 10px;
+    left: auto;
+}
