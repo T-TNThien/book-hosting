@@ -15,40 +15,16 @@
   <body class="bg-dark">
     <nav class="navbar navbar-expand-lg bg-secondary align-items-center">
       <div class="container-fluid d-flex">
-        <div class="d-flex">
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarTogglerDemo03"
-            aria-controls="navbarTogglerDemo03"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
+        <div class="navbar-brand d-flex align-items-center">
+          <button class="navbar-toggler me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          <a class="navbar-brand ms-2" href="#">
-            <img
-              id="logo"
-              src="/img/tachi.png"
-              alt=""
-              class="rounded mx-auto d-block"
-            />
+          <a href="#">
+            <img id="logo" src="/img/tachi.png" alt="Tachi Logo" class="rounded"/>
           </a>
         </div>
-        <form class="d-flex" role="search">
-          <input
-            class="form-control me-2"
-            type="search"
-            placeholder="Enter name of manga"
-            aria-label="Search"
-          />
-          <button class="btn btn-light" type="submit">
-            <img src="/img/icon-search.png" alt="" style="height: 20px" />
-          </button>
-        </form>
         <div class="collapse navbar-collapse mt-3" id="navbarTogglerDemo03">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0 fw-bold">
+          <ul class="navbar-nav me-auto mb-3 fw-bold ps-5">
             <li class="nav-item">
               <a
                 class="text-current nav-link active"
@@ -72,10 +48,18 @@
             <li class="nav-item">
               <a class="nav-link" href="#">History</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link disabled">Disabled</a>
-            </li>
           </ul>
+          <form class="d-flex" role="search">
+            <input
+              class="form-control me-2"
+              type="search"
+              placeholder="Enter name of manga"
+              aria-label="Search"
+            />
+            <button class="btn btn-light" type="submit">
+              <img src="/img/icon-search.png" alt="" style="height: 20px" />
+            </button>
+          </form>
         </div>
       </div>
     </nav>
@@ -84,15 +68,17 @@
       class="carousel slide"
       data-bs-ride="carousel"
     >
-      <h2>Popular titles</h2>
+      <h2 class="text-light p-3 pt-4">Popular titles</h2>
       <div class="carousel-inner">
         <div class="carousel-item active">
-          <div class="carousel-item-content">
-            <img src="/img/cover-bocchi.jpg" class="d-block" alt="" />
-            <div class="carousel-caption pb-5">
+          <div class="carousel-item-content d-flex flex-wrap">
+            <div class="carousel-image d-flex align-items-center justify-content-center overflow-hidden">
+              <img src="/img/cover-bocchi.jpg" class="d-block object-fit-cover rounded-3" alt="" />
+            </div>
+            <div class="carousel-caption text-start d-flex flex-column position-static p-4 overflow-hidden pb-5">
               <h4>Bocchi the Rock!</h4>
               <p class="lead">Hamazi Aki</p>
-              <p>
+              <p class="overflow-hidden">
                 Hitori Gotou is a high school girl who's starting to learn to
                 play the guitar because she dreams of being in a band, but she's
                 so shy that she hasn't made a single friend. However her dream
@@ -108,12 +94,14 @@
           </div>
         </div>
         <div class="carousel-item">
-          <div class="carousel-item-content">
-            <img src="/img/cover-otoyome.jpg" class="d-block" alt="" />
-            <div class="carousel-caption pb-5">
+          <div class="carousel-item-content d-flex flex-wrap">
+            <div class="carousel-image d-flex align-items-center justify-content-center overflow-hidden">
+              <img src="/img/cover-otoyome.jpg" class="d-block object-fit-cover rounded-3" alt="" />
+            </div>
+            <div class="carousel-caption text-start d-flex flex-column position-static p-4 overflow-hidden pb-5">
               <h4>Otoyomegatari</h4>
               <p class="lead">Mori Kaoru</p>
-              <p>
+              <p class="overflow-hidden">
                 Central Asia, mid-19th century: in a rural town near the Caspian
                 Sea, a young woman named Amir arrives from a distant village
                 across the mountains to marry Karluk, a boy eight years her
@@ -130,12 +118,14 @@
           </div>
         </div>
         <div class="carousel-item">
-          <div class="carousel-item-content">
-            <img src="/img/cover-saihate.jpg" class="d-block" alt="" />
-            <div class="carousel-caption pb-5">
+          <div class="carousel-item-content d-flex flex-wrap">
+            <div class="carousel-image d-flex align-items-center justify-content-center overflow-hidden">
+              <img src="/img/cover-saihate.jpg" class="d-block object-fit-cover rounded-3" alt="" />
+            </div>
+            <div class="carousel-caption text-start d-flex flex-column position-static p-4 overflow-hidden pb-5">
               <h4>Saihate no Paladin</h4>
               <p class="lead">Yanagino Kanata, Okubashi Mutsumi</p>
-              <p>
+              <p class="overflow-hidden">
                 A man dies alone after living a stagnant and fruitless life —
                 but that's not where his story ends, as a boy named William is
                 born into a land of fantasy and magic.<br />
@@ -158,30 +148,40 @@
             </div>
           </div>
         </div>
+        <button
+          class="carousel-control-prev position-absolute"
+          type="button"
+          data-bs-target="#carouselExampleControls"
+          data-bs-slide="prev"
+        >
+          <span class="carousel-control-prev-icon"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button
+          class="carousel-control-next position-absolute"
+          type="button"
+          data-bs-target="#carouselExampleControls"
+          data-bs-slide="next"
+        >
+          <span class="carousel-control-next-icon"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
       </div>
-      <button
-        class="carousel-control-prev"
-        type="button"
-        data-bs-target="#carouselExampleControls"
-        data-bs-slide="prev"
-      >
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Previous</span>
-      </button>
-      <button
-        class="carousel-control-next"
-        type="button"
-        data-bs-target="#carouselExampleControls"
-        data-bs-slide="next"
-      >
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="visually-hidden">Next</span>
-      </button>
     </div>
-    <div class="d-flex justify-content-between">
-        <h2>Latest titles</h2>
-        <div class="text-light fs-5">→</div>
+    <h2 class="text-light p-3 pt-4">Latest titles</h2>
+    <div class="d-flex flex-row justify-content-center px-4">
+      <ul class="list-group list-group-vertical w-50 px-1 rounded-0">
+        <li class="list-group-item">An item</li>
+        <li class="list-group-item">A second item</li>
+        <li class="list-group-item">A third item</li>
+      </ul>
+      <ul class="list-group list-group-vertical w-50 px-1 rounded-0">
+        <li class="list-group-item">An item</li>
+        <li class="list-group-item">A second item</li>
+        <li class="list-group-item">A third item</li>
+      </ul>
     </div>
+    <div class="text-light fs-5">View more</div>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"

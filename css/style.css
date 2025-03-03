@@ -2,11 +2,6 @@
     max-width: 75px;
 }
 
-h2 {
-    color: #dddddd;
-    padding: 20px;
-}
-
 .text-current {
     color: #ce2828 !important;
 }
@@ -15,35 +10,41 @@ h2 {
     color: #ce2828 !important;
 }
 
-.carousel-item-content {
-    display: flex;
-    align-items: center;
+.carousel-image {
+    width: 30%;
+    max-height: 400px;
 }
 
-.carousel-item-content img {
-    width: 30% !important;
-    border-radius: 10px;
+.carousel-image img {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
 }
 
 .carousel-caption {
-    width: 70%;
-    text-align: left;
-    position: static !important;
-    padding: 20px;
+    max-width: 70%;
+    max-height: 400px;
+}
+
+.carousel-caption > p {
+    max-height: 125px;
 }
 
 .carousel-control-prev, .carousel-control-next {
-    position: absolute;
     bottom: 10px;
     top: auto;
 }
 
 .carousel-control-prev {
-    right: 100px;
+    right: 200px;
     left: auto;
 }
 
 .carousel-control-next {
-    right: 10px;
+    right: 110px;
     left: auto;
+}
+
+.carousel-inner > button {
+    width: 40px
 }
