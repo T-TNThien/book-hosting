@@ -1,3 +1,7 @@
+a {
+    text-decoration: none;
+}
+
 #logo {
     max-width: 75px;
 }
@@ -10,24 +14,13 @@
     color: #ce2828 !important;
 }
 
-.carousel-image {
-    width: 30%;
-    max-height: 400px;
-}
-
-.carousel-image img {
-    height: 100%;
-    width: auto;
-    max-width: 100%;
-}
-
-.carousel-caption {
-    max-width: 70%;
-    max-height: 400px;
-}
-
-.carousel-caption > p {
-    max-height: 125px;
+.truncate-2-lines {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Limit text to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 3em; 
 }
 
 .carousel-control-prev, .carousel-control-next {
@@ -48,3 +41,4 @@
 .carousel-inner > button {
     width: 40px
 }
+
