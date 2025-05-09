@@ -1,0 +1,289 @@
+<?php
+include 'db.php';
+session_start();
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+
+<body class="bg-dark">
+  <header>
+    <nav class="navbar navbar-expand-lg bg-secondary align-items-center">
+      <div class="container d-flex">
+        <div class="navbar-brand d-flex align-items-center">
+          <button class="navbar-toggler me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <a href="#">
+            <img id="logo" src="../img/tachi.png" alt="Tachi Logo" class="rounded" />
+          </a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+          <ul class="navbar-nav me-auto fw-bold ps-5">
+            <li class="nav-item">
+              <a
+                class="text-current nav-link active"
+                aria-current="page"
+                href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Top</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Latest</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Saved</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">History</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Login</a>
+            </li>
+          </ul>
+          <form class="d-flex" role="search">
+            <input
+              class="form-control me-2"
+              type="search"
+              placeholder="Enter name"
+              aria-label="Search" />
+            <button class="btn btn-light" type="submit">
+              <img src="../img/icon-search.png" alt="" style="height: 20px" />
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+  </header>
+  <main class="container">
+    <!-- Carousel -->
+    <div
+      id="carousel"
+      class="carousel slide"
+      data-bs-ride="carousel">
+      <h2 class="text-light p-3 pt-4">Popular titles</h2>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <a href="#" class="stretched-link"></a>
+          <div class="row text-light">
+            <img src="../img/cover-bocchi.jpg" alt="" class="col-4 m-auto rounded 5">
+            <div class="col-8">
+              <h4>Bocchi the Rock!</h4>
+              <p class="lead text-truncate">Hamazi Aki</p>
+              <p class="truncate-2-lines d-none d-md-block">
+                Hitori Gotou is a high school girl who's starting to learn to
+                play the guitar because she dreams of being in a band, but she's
+                so shy that she hasn't made a single friend. However her dream
+                might come true after she meets Nijika Ijichi, a drummer girl
+                looking for a new guitarist for her band.
+              </p>
+              <div id="carousel-tags" class="d-flex">
+                <div class="badge text-bg-secondary fw-bold py-1 px-2">Comedy</div>
+                <div class="badge text-bg-secondary fw-bold py-1 px-2">Slice of life</div>
+                <div class="badge text-bg-secondary fw-bold py-1 px-2">Music</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <a href="#" class="stretched-link"></a>
+          <div class="row text-light">
+            <img src="../img/cover-otoyome.jpg" alt="" class="col-4 m-auto rounded 5">
+            <div class="col-8">
+              <h4>Otoyomegatari</h4>
+              <p class="lead text-truncate">Mori Kaoru</p>
+              <p class="truncate-2-lines d-none d-md-block">
+                Central Asia, mid-19th century: in a rural town near the Caspian
+                Sea, a young woman named Amir arrives from a distant village
+                across the mountains to marry Karluk, a boy eight years her
+                junior. The story unfolds among details of everyday family and
+                community life. However, the peaceful atmosphere is disturbed
+                when Amir's family demands to take her back to their village.
+              </p>
+              <div id="carousel-tags" class="d-flex">
+                <div class="badge text-bg-secondary fw-bold py-1 px-2">Romance</div>
+                <div class="badge text-bg-secondary fw-bold py-1 px-2">Slice of life</div>
+                <div class="badge text-bg-secondary fw-bold py-1 px-2">Historical</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="carousel-item">
+          <a href="#" class="stretched-link"></a>
+          <div class="row text-light">
+            <img src="../img/cover-saihate.jpg" alt="" class="col-4 m-auto rounded 5">
+            <div class="col-8">
+              <h4>Saihate no Paladin</h4>
+              <p class="lead text-truncate">Yanagino Kanata, Okubashi Mutsumi</p>
+              <p class="truncate-2-lines d-none d-md-block">
+                A man dies alone after living a stagnant and fruitless life —
+                but that's not where his story ends, as a boy named William is
+                born into a land of fantasy and magic.<br />
+                <br />
+                Raised in a city of the dead by his new family — a mummy, a
+                skeleton, and a ghost — he can remember glimpses of his past
+                life, enough to know his time on Earth was wasted, and he vows
+                not to let that happen again.<br />
+                <br />
+                Schooled in magic and combat, Will sets out on a journey to see
+                the world. Along the way, he'll meet beings of all shapes and
+                sizes. Each of these people has a story to tell and a lesson to
+                teach Will about how to live his life to the fullest.
+              </p>
+              <div id="carousel-tags" class="d-flex">
+                <div class="badge text-bg-secondary fw-bold py-1 px-2">Action</div>
+                <div class="badge text-bg-secondary fw-bold py-1 px-2">Adventure</div>
+                <div class="badge text-bg-secondary fw-bold py-1 px-2">Fantasy</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          class="carousel-control-prev position-absolute d-none d-md-block"
+          type="button"
+          data-bs-target="#carouselExampleControls"
+          data-bs-slide="prev">
+          <span class="bg-secondary rounded carousel-control-prev-icon"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button
+          class="carousel-control-next position-absolute d-none d-md-block"
+          type="button"
+          data-bs-target="#carouselExampleControls"
+          data-bs-slide="next">
+          <span class="bg-secondary rounded carousel-control-next-icon"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+    </div>
+  
+    <h2 class="text-light p-3 pt-4">Latest titles</h2>
+    <div class="container-fluid">
+      <div class="row row-cols-md-2 row-cols-lg-3 g-2 px-md-5">
+        <div>
+          <a href="#" class="d-flex text-bg-secondary rounded-3">
+            <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
+            <div class="w-75 m-auto px-3">
+              <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
+              <p class="card-text">Chapter 10</p>
+            </div>
+          </a>
+        </div>
+        <div>
+          <a href="#" class="d-flex text-bg-secondary rounded-3">
+            <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
+            <div class="w-75 m-auto px-3">
+              <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
+              <p class="card-text">Chapter 10</p>
+            </div>
+          </a>
+        </div>
+        <div>
+          <a href="#" class="d-flex text-bg-secondary rounded-3">
+            <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
+            <div class="w-75 m-auto px-3">
+              <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
+              <p class="card-text">Chapter 10</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex justify-content-end m-3">
+      <a href="#" class="btn text-bg-secondary fs-5">View more</a>
+    </div>
+  
+    <h2 class="text-light p-3 pt-4">Staff picks</h2>
+    <div class="container-fluid">
+      <div class="row row-cols-md-2 row-cols-lg-3 g-2 px-md-5">
+        <div>
+          <a href="#" class="d-flex text-bg-secondary rounded-3">
+            <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
+            <div class="w-75 m-auto px-3">
+              <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
+              <p class="card-text">Chapter 10</p>
+            </div>
+          </a>
+        </div>
+        <div>
+          <a href="#" class="d-flex text-bg-secondary rounded-3">
+            <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
+            <div class="w-75 m-auto px-3">
+              <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
+              <p class="card-text">Chapter 10</p>
+            </div>
+          </a>
+        </div>
+        <div>
+          <a href="#" class="d-flex text-bg-secondary rounded-3">
+            <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
+            <div class="w-75 m-auto px-3">
+              <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
+              <p class="card-text">Chapter 10</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  
+    <h2 class="text-light p-3 pt-4">Past read</h2>
+    <div class="container-fluid">
+      <div class="row row-cols-md-2 row-cols-lg-3 g-2 px-md-5">
+        <div>
+          <a href="#" class="d-flex text-bg-secondary rounded-3">
+            <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
+            <div class="w-75 m-auto px-3">
+              <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
+              <p class="card-text">Chapter 10</p>
+            </div>
+          </a>
+        </div>
+        <div>
+          <a href="#" class="d-flex text-bg-secondary rounded-3">
+            <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
+            <div class="w-75 m-auto px-3">
+              <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
+              <p class="card-text">Chapter 10</p>
+            </div>
+          </a>
+        </div>
+        <div>
+          <a href="#" class="d-flex text-bg-secondary rounded-3">
+            <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
+            <div class="w-75 m-auto px-3">
+              <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
+              <p class="card-text">Chapter 10</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex justify-content-end m-3">
+      <a href="#" class="btn text-bg-secondary fs-5">View more</a>
+    </div>
+  </main>
+  <footer class="text-bg-secondary text-center bottom-0">
+    <div class="container">
+      <div class="text-start m-3 mt-3">
+        <a class="nav-link" href="#">Top</a>
+        <a class="nav-link" href="#">Latest</a>
+        <a class="nav-link" href="#">Saved</a>
+        <a class="nav-link" href="#">History</a>
+      </div>
+      <h4>© 2025 Your Company. All Rights Reserved.</h4>
+    </div>
+  </footer>
+</body>
+
+</html>
