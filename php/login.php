@@ -2,6 +2,11 @@
   session_start();
   unset($_SESSION["is"]);
   require_once 'db.php';
+
+  if (isset($_GET['redirect'])) {
+    $_SESSION['redirect_after_login'] = $_GET['redirect'];
+  }
+  
   if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($_POST['password'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -16,7 +21,10 @@
       $_SESSION["user_id"] = $user['id'];
       $_SESSION["username"] = $user['username'];
       $_SESSION["is"] = true;
-      header("Location: index.php");
+      $redirect = $_SESSION['redirect_after_login'] ?? 'index.php';
+      unset($_SESSION['redirect_after_login']);
+      header("Location: " . $redirect);
+      exit();
     } else {
       $_SESSION["is"] = false;
     }

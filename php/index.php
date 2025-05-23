@@ -30,10 +30,7 @@ session_start();
         <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
           <ul class="navbar-nav me-auto my-2 fw-bold ps-5">
             <li class="nav-item">
-              <a
-                class="text-current nav-link active"
-                aria-current="page"
-                href="#">Home</a>
+              <a class="text-current nav-link active" href="index.php">Home</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">Top</a>
@@ -49,13 +46,13 @@ session_start();
                 <a class="nav-link" href="#">Saved</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="profile.php?username=<?= $_SESSION['username'] ?>">Profile</a>
+                <a class="nav-link" href="profile.php">Profile</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="logout.php">Logout</a>
               </li>
             <?php else : ?>
-              <a class="nav-link" href="login.php">Login</a>
+              <a class="nav-link" href="login.php?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>">Login</a>
             <?php endif; ?>
           </ul>
           <form class="d-flex" role="search">
@@ -91,7 +88,7 @@ session_start();
       <?php if (!empty($books)) : ?>
         <!-- First carousel item (active) -->
         <div class="carousel-item active">
-          <a href="#" class="stretched-link"></a>
+          <a href="details.php?id=<?= htmlspecialchars($books[0]['id']) ?>" class="stretched-link"></a>
           <div class="row row-cols-1 row-cols-lg-2 text-light align-carousel">
             <div class="col col-lg-4">
 
@@ -125,9 +122,9 @@ session_start();
 
         <!-- Remaining carousel items -->
         <?php foreach ($books as $i => $book): ?>
-          <?php if ($i === 0) continue; ?>
+          <?php if ($i === 0) {continue;} ?>
           <div class="carousel-item">
-            <a href="#" class="stretched-link"></a>
+            <a href="details.php?id=<?= htmlspecialchars($book['id']) ?>" class="stretched-link"></a>
             <div class="row row-cols-1 row-cols-lg-2 text-light align-carousel">
               <div class="col col-lg-4">
 
@@ -160,19 +157,6 @@ session_start();
           </div>
         <?php endforeach; ?>
       <?php endif; ?>
-
-
-          <!-- <div id="carousel-tags" class="d-flex">
-            <div class="badge bg-3 fw-bold py-1 px-2">Comedy</div>
-            v class="badge bg-3 fw-bold py-1 px-2">Slice of life</div>
-            <div class="badge bg-3 fw-bold py-1 px-2">Music</div>
-          </div> -->
-        <!-- <div id="carousel-tags" class="d-flex">
-          <div class="badge bg-3 fw-bold py-1 px-2">Comedy</div>
-          v class="badge bg-3 fw-bold py-1 px-2">Slice of life</div>
-          <div class="badge bg-3 fw-bold py-1 px-2">Music</div>
-        </div> -->
-        
         <button
           class="carousel-control-prev position-absolute d-none d-md-block"
           type="button"
@@ -217,7 +201,7 @@ session_start();
 
       <?php foreach ($latestBooks as $book): ?>
         <div>
-          <a href="#" class="d-flex text-white bg-secondary bg-opacity-50 rounded-3">
+          <a href="details.php?id=<?= $book['book_id'] ?>" class="d-flex text-white bg-secondary bg-opacity-50 rounded-3">
             <img src="<?= htmlspecialchars($book['cover']) ?>" alt="<?= htmlspecialchars($book['book_title']) ?>" class="w-25 rounded-3">
             <div class="w-75 m-auto px-3">
               <h5 class="card-title text-truncate"><?= htmlspecialchars($book['book_title']) ?></h5>
@@ -258,7 +242,7 @@ session_start();
 
           <?php foreach ($latestBooks as $book): ?>
             <div class="col">
-              <a href="#" class="card text-white bg-secondary bg-opacity-50 rounded-3">
+              <a href="details.php?id=<?= $book['book_id'] ?>" class="card text-white bg-secondary bg-opacity-50 rounded-3">
                 <img src="<?= htmlspecialchars($book['cover']) ?>" alt="<?= htmlspecialchars($book['book_title']) ?>" class="card-img-top rounded-3">
                 <h5 class="card-title text-truncate m-3"><?= htmlspecialchars($book['book_title']) ?></h5>
                 <p class="card-text mx-3 mb-3"><?= $book['latest_chapter'] ? "Chapter " . htmlspecialchars($book['latest_chapter']) : "No chapters yet" ?></p>
@@ -305,7 +289,7 @@ session_start();
                         <h5 class="card-title text-truncate"><?= htmlspecialchars($book['title']) ?></h5>
                         <p class="card-text">Chapter <?= htmlspecialchars($book['chapter_number'] ?? '0') ?></p>
                       </div>
-                      <a href="read.php?book=<?= $book['book_id'] ?>&chapter=<?= $book['chapter_id'] ?>" class="stretched-link"></a>
+                      <a href="details.php?id=<?= $book['book_id'] ?>" class="stretched-link"></a>
                     </div>
                   </div>
                 <?php endforeach; ?>
@@ -344,40 +328,10 @@ session_start();
                     <h5 class="card-title text-truncate"><?= htmlspecialchars($book['title']) ?></h5>
                     <p class="card-text">Chapter <?= htmlspecialchars($book['chapter_number'] ?? '0') ?></p>
                   </div>
-                  <a href="read.php?book=<?= $book['book_id'] ?>&chapter=<?= $book['chapter_id'] ?>" class="stretched-link"></a>
+                  <a href="details.php?id=<?= $book['book_id'] ?>" class="stretched-link"></a>
                 </div>
               </div>
             <?php endforeach; ?>
-            <!-- <div>
-              <div class="position-relative d-flex text-white bg-secondary bg-opacity-50 rounded-3">
-                <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
-                <div class="w-75 m-auto px-3">
-                  <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
-                  <p class="card-text">Chapter 10</p>
-                </div>
-                <a href="#" class="stretched-link"></a>
-              </div>
-            </div>
-            <div>
-              <div class="position-relative d-flex text-white bg-secondary bg-opacity-50 rounded-3">
-                <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
-                <div class="w-75 m-auto px-3">
-                  <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
-                  <p class="card-text">Chapter 10</p>
-                </div>
-                <a href="#" class="stretched-link"></a>
-              </div>
-            </div>
-            <div>
-              <div class="position-relative d-flex text-white bg-secondary bg-opacity-50 rounded-3">
-                <img src="../img/cover-bocchi.jpg" alt="" class="w-25 rounded-3">
-                <div class="w-75 m-auto px-3">
-                  <h5 class="card-title text-truncate">A really, extremely long title to serve as an example</h5>
-                  <p class="card-text">Chapter 10</p>
-                </div>
-                <a href="#" class="stretched-link"></a>
-              </div>
-            </div> -->
           </div>
         </div>
       </div>
@@ -394,7 +348,7 @@ session_start();
           <a class="btn text-white" href="#">Saved</a>
         <?php endif; ?>
       </div>
-      <h4>© 2025 Your Company. All Rights Reserved.</h4>
+      <h4>© 2025 Book Hosting Website</h4>
     </div>
   </footer>
   
