@@ -1,6 +1,5 @@
 <?php
   session_start();
-  unset($_SESSION["is"]);
   require_once 'db.php';
 
   if (isset($_GET['redirect'])) {

@@ -110,7 +110,7 @@ if (isset($_SESSION['user_id'])) {
                         <li class="nav-item">
                             <a class="nav-link" href="#">New</a>
                         </li>
-                        <?php if (isset($_SESSION['is']) && $_SESSION['is']) : ?>
+                        <?php if (isset($_SESSION['user_id'])) : ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Saved</a>
                             </li>
@@ -217,7 +217,7 @@ if (isset($_SESSION['user_id'])) {
                 <a class="btn text-white" href="#">Top</a>
                 <a class="btn text-white" href="#">Latest</a>
                 <a class="btn text-white" href="#">New</a>
-                <?php if (isset($_SESSION['is']) && $_SESSION['is']) : ?>
+                <?php if (isset($_SESSION['user_id'])) : ?>
                     <a class="btn text-white" href="#">Saved</a>
                 <?php endif; ?>
             </div>

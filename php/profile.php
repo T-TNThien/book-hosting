@@ -26,6 +26,39 @@ $stmt = $pdo->prepare("
 ");
 $stmt->execute([$user['id']]);
 $saved_books = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Avatar update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['avatar'])) {
+    $avatarUrl = trim($_POST['avatar']);
+
+    if (!empty($avatarUrl)) {
+        $stmt = $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?");
+        $stmt->execute([$avatarUrl, $_SESSION['user_id']]);
+        header("Location: profile.php");
+        exit();
+    }
+}
+
+// Password update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $_POST['new_password'], $_POST['confirm_password'])) {
+    $current = $_POST['current_password'];
+    $new = $_POST['new_password'];
+    $confirm = $_POST['confirm_password'];
+
+    $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
+
+    if (password_verify($current, $user['password'])) {
+        $hashed = password_hash($new, PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+        $stmt->execute([$hashed, $_SESSION['user_id']]);
+        echo "<script>alert('Password updated successfully.');</script>";
+    } else {
+        echo "<script>alert('Current password is incorrect.');</script>";
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -65,7 +98,7 @@ $saved_books = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <li class="nav-item">
                             <a class="nav-link" href="#">New</a>
                         </li>
-                        <?php if (isset($_SESSION['is']) && $_SESSION['is']) : ?>
+                        <?php if (isset($_SESSION['user_id'])) : ?>
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Saved</a>
                             </li>
@@ -116,7 +149,14 @@ $saved_books = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 Update Image
             </button>
             <a href="books.php" class="btn btn-secondary mb-5">Manage Books</a>
-            <!-- Modal -->
+            <button
+                class="btn btn-warning mb-5"
+                data-bs-toggle="modal"
+                data-bs-target="#passwordModal"
+            >
+                Change Password
+            </button>
+            <!-- Modal for avatar change -->
             <div
                 class="modal fade"
                 id="avatarModal"
@@ -137,32 +177,110 @@ $saved_books = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 aria-label="Close"
                             ></button>
                         </div>
-                        <div class="modal-body">
-                            <form action="profile.html" method="GET" id="avatarForm">
+                        <form action="profile.php" method="POST" id="avatarForm">
+                            <div class="modal-body">
                                 <label for="newAvatarUrl" class="form-label">New Avatar URL</label>
                                 <input
                                     type="url"
                                     class="form-control bg-secondary text-white border-0"
                                     id="newAvatarUrl"
                                     name="avatar"
+                                    required
                                 />
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button
-                                type="button"
-                                class="btn btn-outline-light"
-                                data-bs-dismiss="modal"
-                            >
-                                Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary" form="avatarForm">
-                                Save
-                            </button>
-                        </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-light"
+                                    data-bs-dismiss="modal"
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    Save
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
+            <!-- Modal for password change -->
+            <div
+                class="modal fade"
+                id="passwordModal"
+                tabindex="-1"
+                aria-labelledby="passwordModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog">
+                    <div class="modal-content bg-dark text-white border-light">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="passwordModalLabel">Change Password</h5>
+                            <button
+                                type="button"
+                                class="btn-close btn-close-white"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                            ></button>
+                        </div>
+
+                        <form action="profile.php" method="POST" id="passwordForm">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="currentPassword" class="form-label">Current Password</label>
+                                    <input
+                                        type="password"
+                                        class="form-control bg-secondary text-white border-0"
+                                        id="currentPassword"
+                                        name="current_password"
+                                        required
+                                    />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="newPassword" class="form-label">New Password</label>
+                                    <input
+                                        type="password"
+                                        class="form-control bg-secondary text-white border-0"
+                                        id="newPassword"
+                                        name="new_password"
+                                        required
+                                        maxlength="64"
+                                        minlength="6"
+                                    />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        class="form-control bg-secondary text-white border-0"
+                                        id="confirmPassword"
+                                        name="confirm_password"
+                                        required
+                                        maxlength="64"
+                                        minlength="6"
+                                    />
+                                </div>
+                                <div class="mb-3">
+                                    <div id="passwordMatchMessage" class="form-text text-danger mt-1"></div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button
+                                    type="button"
+                                    class="btn btn-outline-light"
+                                    data-bs-dismiss="modal"
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" class="btn btn-warning" form="passwordForm">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- Uploaded Books -->
             <div class="mb-5">
@@ -223,7 +341,7 @@ $saved_books = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <a class="btn text-white" href="#">Top</a>
                 <a class="btn text-white" href="#">Latest</a>
                 <a class="btn text-white" href="#">New</a>
-                <?php if (isset($_SESSION['is']) && $_SESSION['is']) : ?>
+                <?php if (isset($_SESSION['user_id'])) : ?>
                     <a class="btn text-white" href="#">Saved</a>
                 <?php endif; ?>
             </div>
@@ -231,6 +349,36 @@ $saved_books = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </footer>
 
+    <script>
+        // Password validation
+        const newPassword = document.getElementById('newPassword');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const matchMessage = document.getElementById('passwordMatchMessage');
+        const submitBtn = document.querySelector('#passwordForm button[type="submit"]');
+
+        function checkPasswordMatch() {
+            if (confirmPassword.value === "") {
+                matchMessage.textContent = '';
+                submitBtn.disabled = false;
+                return;
+            }
+
+            if (newPassword.value === confirmPassword.value) {
+                matchMessage.textContent = '✔ Passwords match';
+                matchMessage.classList.remove('text-danger');
+                matchMessage.classList.add('text-success');
+                submitBtn.disabled = false;
+            } else {
+                matchMessage.textContent = '✖ Passwords do not match';
+                matchMessage.classList.remove('text-success');
+                matchMessage.classList.add('text-danger');
+                submitBtn.disabled = true;
+            }
+        }
+
+        newPassword.addEventListener('input', checkPasswordMatch);
+        confirmPassword.addEventListener('input', checkPasswordMatch);
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
