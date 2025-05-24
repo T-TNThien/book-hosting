@@ -39,26 +39,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['avatar'])) {
     }
 }
 
-// Password update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $_POST['new_password'], $_POST['confirm_password'])) {
-    $current = $_POST['current_password'];
-    $new = $_POST['new_password'];
-    $confirm = $_POST['confirm_password'];
+// Pagination
+// Defaults
+$limit = 12;
+$page_uploaded = isset($_GET['uploaded_page']) ? (int)$_GET['uploaded_page'] : 1;
+$page_saved = isset($_GET['saved_page']) ? (int)$_GET['saved_page'] : 1;
 
-    $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
-    $stmt->execute([$_SESSION['user_id']]);
-    $user = $stmt->fetch();
+// Calculate offsets
+$offset_uploaded = ($page_uploaded - 1) * $limit;
+$offset_saved = ($page_saved - 1) * $limit;
 
-    if (password_verify($current, $user['password'])) {
-        $hashed = password_hash($new, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-        $stmt->execute([$hashed, $_SESSION['user_id']]);
-        echo "<script>alert('Password updated successfully.');</script>";
-    } else {
-        echo "<script>alert('Current password is incorrect.');</script>";
-    }
-}
+// Uploaded books
+$stmt = $pdo->prepare("SELECT * FROM books WHERE uploader_id = ? LIMIT ? OFFSET ?");
+$stmt->bindValue(1, $_SESSION['user_id'], PDO::PARAM_INT);
+$stmt->bindValue(2, $limit, PDO::PARAM_INT);
+$stmt->bindValue(3, $offset_uploaded, PDO::PARAM_INT);
+$stmt->execute();
+$uploaded_books = $stmt->fetchAll();
 
+// Saved books
+$stmt = $pdo->prepare("
+    SELECT b.* FROM saved_books sb
+    JOIN books b ON sb.book_id = b.id
+    WHERE sb.user_id = ?
+    LIMIT ? OFFSET ?
+");
+$stmt->bindValue(1, $_SESSION['user_id'], PDO::PARAM_INT);
+$stmt->bindValue(2, $limit, PDO::PARAM_INT);
+$stmt->bindValue(3, $offset_saved, PDO::PARAM_INT);
+$stmt->execute();
+$saved_books = $stmt->fetchAll();
+
+
+// Uploaded
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM books WHERE uploader_id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$total_uploaded = $stmt->fetchColumn();
+$total_uploaded_pages = ceil($total_uploaded / $limit);
+
+// Saved
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM saved_books WHERE user_id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$total_saved = $stmt->fetchColumn();
+$total_saved_pages = ceil($total_saved / $limit);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -66,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
+    <title>Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css" />
@@ -80,30 +103,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                     <button class="navbar-toggler me-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
-                    <a href="#">
+                    <a href="index.php">
                         <img id="logo" src="../img/tachi.png" alt="Tachi Logo" class="rounded" />
                     </a>
                 </div>
                 <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
                     <ul class="navbar-nav me-auto my-2 fw-bold ps-5">
                         <li class="nav-item">
-                            <a class="text-current nav-link active" href="index.php">Home</a>
+                            <a class="nav-link" href="index.php">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Top</a>
+                            <a class="nav-link" href="search.php?sort=desc-views">Top</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Latest</a>
+                            <a class="nav-link" href="search.php?sort=desc-updated">Latest</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">New</a>
+                            <a class="nav-link" href="search.php?sort=desc-created">New</a>
                         </li>
                         <?php if (isset($_SESSION['user_id'])) : ?>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Saved</a>
+                                <a class="nav-link" href="books.php">Manage upload</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="profile.php">Profile</a>
+                                <a class="text-current nav-link active" href="profile.php">Profile</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="logout.php">Logout</a>
@@ -142,18 +165,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
             </div>
 
             <button
-                class="btn btn-primary mb-5"
+                class="btn bg-3 mb-5"
                 data-bs-toggle="modal"
-                data-bs-target="#avatarModal"
-            >
+                data-bs-target="#avatarModal">
                 Update Image
             </button>
-            <a href="books.php" class="btn btn-secondary mb-5">Manage Books</a>
+            <a href="books.php" class="btn btn-secondary mb-5">Manage Uploaded Books</a>
             <button
                 class="btn btn-warning mb-5"
                 data-bs-toggle="modal"
-                data-bs-target="#passwordModal"
-            >
+                data-bs-target="#passwordModal">
                 Change Password
             </button>
             <!-- Modal for avatar change -->
@@ -162,8 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                 id="avatarModal"
                 tabindex="-1"
                 aria-labelledby="avatarModalLabel"
-                aria-hidden="true"
-            >
+                aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content bg-dark text-white border-light">
                         <div class="modal-header">
@@ -174,8 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                                 type="button"
                                 class="btn-close btn-close-white"
                                 data-bs-dismiss="modal"
-                                aria-label="Close"
-                            ></button>
+                                aria-label="Close"></button>
                         </div>
                         <form action="profile.php" method="POST" id="avatarForm">
                             <div class="modal-body">
@@ -185,15 +204,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                                     class="form-control bg-secondary text-white border-0"
                                     id="newAvatarUrl"
                                     name="avatar"
-                                    required
-                                />
+                                    required />
                             </div>
                             <div class="modal-footer">
                                 <button
                                     type="button"
                                     class="btn btn-outline-light"
-                                    data-bs-dismiss="modal"
-                                >
+                                    data-bs-dismiss="modal">
                                     Cancel
                                 </button>
                                 <button type="submit" class="btn btn-primary">
@@ -210,8 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                 id="passwordModal"
                 tabindex="-1"
                 aria-labelledby="passwordModalLabel"
-                aria-hidden="true"
-            >
+                aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content bg-dark text-white border-light">
                         <div class="modal-header">
@@ -220,11 +236,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                                 type="button"
                                 class="btn-close btn-close-white"
                                 data-bs-dismiss="modal"
-                                aria-label="Close"
-                            ></button>
+                                aria-label="Close"></button>
                         </div>
 
-                        <form action="profile.php" method="POST" id="passwordForm">
+                        <form id="passwordForm">
                             <div class="modal-body">
                                 <div class="mb-3">
                                     <label for="currentPassword" class="form-label">Current Password</label>
@@ -233,8 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                                         class="form-control bg-secondary text-white border-0"
                                         id="currentPassword"
                                         name="current_password"
-                                        required
-                                    />
+                                        required />
                                 </div>
                                 <div class="mb-3">
                                     <label for="newPassword" class="form-label">New Password</label>
@@ -245,8 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                                         name="new_password"
                                         required
                                         maxlength="64"
-                                        minlength="6"
-                                    />
+                                        minlength="6" />
                                 </div>
                                 <div class="mb-3">
                                     <label for="confirmPassword" class="form-label">Confirm New Password</label>
@@ -257,8 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                                         name="confirm_password"
                                         required
                                         maxlength="64"
-                                        minlength="6"
-                                    />
+                                        minlength="6" />
                                 </div>
                                 <div class="mb-3">
                                     <div id="passwordMatchMessage" class="form-text text-danger mt-1"></div>
@@ -268,11 +280,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                                 <button
                                     type="button"
                                     class="btn btn-outline-light"
-                                    data-bs-dismiss="modal"
-                                >
+                                    data-bs-dismiss="modal">
                                     Cancel
                                 </button>
-                                <button type="submit" class="btn btn-warning" form="passwordForm">
+                                <button type="submit" class="btn btn-warning" form="passwordForm" disabled>
                                     Save Changes
                                 </button>
                             </div>
@@ -308,8 +319,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                 <?php endif; ?>
             </div>
 
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <?php for ($i = 1; $i <= $total_uploaded_pages; $i++): ?>
+                        <li class="page-item <?= $i === $page_uploaded ? 'active' : '' ?>">
+                            <a class="page-link" href="?uploaded_page=<?= $i ?>&saved_page=<?= $page_saved ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+                </ul>
+            </nav>
+
             <!-- Saved Books -->
-            <div class="mb-5">
+            <div class="mb-5" id="saved-books">
                 <h3 class="mb-3">💾 Saved Books</h3>
                 <?php if (count($saved_books)): ?>
                     <div class="row row-cols-2 row-cols-md-4 g-3">
@@ -333,16 +354,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                     <p class="text-muted">No saved books yet.</p>
                 <?php endif; ?>
             </div>
+
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+                    <?php for ($i = 1; $i <= $total_saved_pages; $i++): ?>
+                        <li class="page-item <?= $i === $page_saved ? 'active' : '' ?>">
+                            <a class="page-link" href="?uploaded_page=<?= $page_uploaded ?>&saved_page=<?= $i ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+                </ul>
+            </nav>
         </div>
     </main>
     <footer class="text-bg-secondary bg-opacity-50 text-center bottom-0 py-3">
         <div class="container">
             <div class="text-start mb-3">
-                <a class="btn text-white" href="#">Top</a>
-                <a class="btn text-white" href="#">Latest</a>
-                <a class="btn text-white" href="#">New</a>
+                <a class="btn text-white" href="search.php?sort=desc-views">Top</a>
+                <a class="btn text-white" href="search.php?sort=desc-updated">Latest</a>
+                <a class="btn text-white" href="search.php?sort=desc-created">New</a>
                 <?php if (isset($_SESSION['user_id'])) : ?>
-                    <a class="btn text-white" href="#">Saved</a>
+                    <a class="btn text-white" href="books.php">Manage upload</a>
                 <?php endif; ?>
             </div>
             <h4>© 2025 Book Hosting Website</h4>
@@ -351,15 +382,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
 
     <script>
         // Password validation
+        const currentPassword = document.getElementById('currentPassword');
         const newPassword = document.getElementById('newPassword');
         const confirmPassword = document.getElementById('confirmPassword');
         const matchMessage = document.getElementById('passwordMatchMessage');
         const submitBtn = document.querySelector('#passwordForm button[type="submit"]');
 
         function checkPasswordMatch() {
-            if (confirmPassword.value === "") {
+            if (currentPassword.value === "" || newPassword.value === "" || confirmPassword.value === "") {
                 matchMessage.textContent = '';
-                submitBtn.disabled = false;
+                submitBtn.disabled = true;
                 return;
             }
 
@@ -374,10 +406,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['current_password'], $
                 matchMessage.classList.add('text-danger');
                 submitBtn.disabled = true;
             }
+            if (currentPassword.value === newPassword.value) {
+                matchMessage.textContent = '✖ New password cannot be the same as the current password';
+                matchMessage.classList.remove('text-success');
+                matchMessage.classList.add('text-danger');
+                submitBtn.disabled = true;
+            }
         }
 
+        currentPassword.addEventListener('input', checkPasswordMatch);
         newPassword.addEventListener('input', checkPasswordMatch);
         confirmPassword.addEventListener('input', checkPasswordMatch);
+
+        // Password change submit
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const formData = new FormData(form);
+
+            const response = await fetch('update_password.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            const msgBox = document.getElementById('passwordMatchMessage');
+
+            if (result.success) {
+                msgBox.classList.remove('text-danger');
+                msgBox.classList.add('text-success');
+                msgBox.textContent = result.message;
+            } else {
+                msgBox.classList.remove('text-success');
+                msgBox.classList.add('text-danger');
+                msgBox.textContent = result.message;
+            }
+        });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 

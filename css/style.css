@@ -6,6 +6,11 @@ a {
     max-width: 75px;
 }
 
+.active > .page-link {
+    background-color: #608BC1 !important;
+    border-color: #608BC1 !important;
+}
+
 .carousel-img {
     width: 100%;
     height: auto;

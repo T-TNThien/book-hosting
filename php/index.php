@@ -33,17 +33,17 @@ session_start();
               <a class="text-current nav-link active" href="index.php">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Top</a>
+              <a class="nav-link" href="search.php?sort=desc-views">Top</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Latest</a>
+              <a class="nav-link" href="search.php?sort=desc-updated">Latest</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">New</a>
+              <a class="nav-link" href="search.php?sort=desc-created">New</a>
             </li>
             <?php if (isset($_SESSION['user_id'])) : ?>
               <li class="nav-item">
-                <a class="nav-link" href="#">Saved</a>
+                <a class="nav-link" href="books.php">Manage upload</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="profile.php">Profile</a>
@@ -179,7 +179,7 @@ session_start();
     <!-- Latest updates -->
     <div class="d-flex justify-content-between align-items-center mt-3">
       <h2 class="text-light p-3 pt-4">Latest updates</h2>
-      <a href="#" class="btn btn-info fs-5">View more</a>
+      <a href="search.php?sort=desc-updated" class="btn btn-info fs-5">View more</a>
     </div>
     <div class="row row-cols-md-2 row-cols-lg-3 g-2">
       <?php
@@ -220,7 +220,7 @@ session_start();
       <div class="col col-lg-8">
         <div class="d-flex justify-content-between align-items-center">
             <h2 class="text-light p-3 pt-4">New titles</h2>
-            <a href="#" class="btn btn-info fs-5">View more</a>
+            <a href="search.php?sort=desc-created" class="btn btn-info fs-5">View more</a>
           </div>
         <div class="row row-cols-md-3 row-cols-lg-4 g-2">
           <?php
@@ -257,7 +257,7 @@ session_start();
         <div>
           <div class="d-flex justify-content-between align-items-center">
             <h2 class="text-light p-3 pt-4">Saved</h2>
-            <a href="#" class="btn btn-info fs-5">View more</a>
+            <a href="profile.php#saved-books" class="btn btn-info fs-5">View more</a>
           </div>
           <div class="row row-cols-md-2 row-cols-lg-1 g-2">
             <?php if (isset($_SESSION["user_id"])): ?>
@@ -341,11 +341,11 @@ session_start();
   <footer class="text-bg-secondary bg-opacity-50 text-center bottom-0 py-3">
     <div class="container">
       <div class="text-start mb-3">
-        <a class="btn text-white" href="#">Top</a>
-        <a class="btn text-white" href="#">Latest</a>
-        <a class="btn text-white" href="#">New</a>
+        <a class="btn text-white" href="search.php?sort=desc-views">Top</a>
+        <a class="btn text-white" href="search.php?sort=desc-updated">Latest</a>
+        <a class="btn text-white" href="search.php?sort=desc-created">New</a>
         <?php if (isset($_SESSION['user_id'])) : ?>
-          <a class="btn text-white" href="#">Saved</a>
+          <a class="btn text-white" href="books.php">Manage upload</a>
         <?php endif; ?>
       </div>
       <h4>© 2025 Book Hosting Website</h4>
