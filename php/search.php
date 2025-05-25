@@ -22,30 +22,61 @@ $orderClause = match ($sort) {
     default => 'ORDER BY title ASC',
 };
 
-$countSql = "SELECT COUNT(DISTINCT b.id) FROM books b
+// Load all genres
+$genres_stmt = $pdo->query("SELECT id, name FROM genres ORDER BY name ASC");
+$all_genres = $genres_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Selected genre IDs from GET (if any)
+$selected_genres = isset($_GET['genres']) && is_array($_GET['genres']) ? array_map('intval', $_GET['genres']) : [];
+$genreFilter = '';
+if (!empty($selected_genres)) {
+    $genreConditions = [];
+    foreach ($selected_genres as $index => $genre_id) {
+        $genreConditions[] = ":genre$index";
+    }
+    $genreInClause = implode(',', $genreConditions);
+    $genreFilter = "AND b.id IN (
+        SELECT book_id FROM books_genres WHERE genre_id IN ($genreInClause)
+        GROUP BY book_id
+        HAVING COUNT(DISTINCT genre_id) = " . count($selected_genres) . "
+    )";
+}
+
+$countSql = "SELECT COUNT(DISTINCT b.id)
+             FROM books b
              LEFT JOIN chapters c ON b.id = c.book_id
-             WHERE b.title LIKE :query OR b.description LIKE :query";
+             WHERE (b.title LIKE :query OR b.description LIKE :query)
+             $genreFilter";
 $countStmt = $pdo->prepare($countSql);
-$countStmt->execute(['query' => "%$q%"]);
+$countStmt->bindValue(':query', "%$q%", PDO::PARAM_STR);
+foreach ($selected_genres as $index => $gid) {
+    $countStmt->bindValue(":genre$index", $gid, PDO::PARAM_INT);
+}
+$countStmt->execute();
 $totalResults = $countStmt->fetchColumn();
 
-// Calculate total pages
-$totalPages = ceil($totalResults / $limit);
 
+// Calculate total pages
 $sql = "SELECT b.*, COUNT(c.id) AS chapter_count
         FROM books b
         LEFT JOIN chapters c ON b.id = c.book_id
-        WHERE b.title LIKE :query OR b.description LIKE :query
+        WHERE (b.title LIKE :query OR b.description LIKE :query)
+        $genreFilter
         GROUP BY b.id
         $orderClause
         LIMIT :limit OFFSET :offset";
 $stmt = $pdo->prepare($sql);
 $stmt->bindValue(':query', "%$q%", PDO::PARAM_STR);
+foreach ($selected_genres as $index => $gid) {
+    $stmt->bindValue(":genre$index", $gid, PDO::PARAM_INT);
+}
 $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Calculate total pages
+$totalPages = ceil($totalResults / $limit);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -121,6 +152,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="text-secondary"><?= $q ? (htmlspecialchars($q)) : '' ?></span>
             </h1>
             <form class="" role="search" method="get">
+                <!-- Text input -->
                 <div class="input-group">
                     <input
                         class="form-control border-start-0"
@@ -131,7 +163,16 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         id="q"
                         value="<?= htmlspecialchars($q) ?>" />
                 </div>
+
                 <div class="d-flex gap-2 justify-content-end mt-2">
+                    <!-- Genre filters -->
+                    <button
+                        type="button"
+                        class="btn btn-outline-light"
+                        onclick="document.getElementById('genre-filters').classList.toggle('d-none')">
+                        Filter Tags
+                    </button>
+                    <!-- Sort -->
                     <select class="form-select w-auto" name="sort" id="sort">
                         <option value="asc-alphabet" <?= $sort == 'asc-alphabet' ? 'selected' : '' ?>>A-Z</option>
                         <option value="desc-alphabet" <?= $sort == 'desc-alphabet' ? 'selected' : '' ?>>Z-A</option>
@@ -142,9 +183,29 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <option value="desc-views" <?= $sort == 'desc-views' ? 'selected' : '' ?>>Most Viewed (Descending)</option>
                         <option value="asc-views" <?= $sort == 'asc-views' ? 'selected' : '' ?>>Most Viewed (Ascending)</option>
                     </select>
+                    <!-- Search -->
                     <button class="btn btn-light" type="submit">
                         <img src="../img/icon-search.png" alt="" style="height: 20px" />
                     </button>
+                </div>
+
+                <!-- Genre filters -->
+                <div id="genre-filters" class="d-none mt-3 bg-dark p-3 rounded">
+                    <div class="row">
+                        <?php foreach ($all_genres as $genre): ?>
+                            <div class="col-6 col-md-3">
+                                <label class="form-check-label">
+                                    <input
+                                        class="form-check-input me-1"
+                                        type="checkbox"
+                                        name="genres[]"
+                                        value="<?= $genre['id'] ?>"
+                                        <?= in_array($genre['id'], $selected_genres) ? 'checked' : '' ?> />
+                                    <?= htmlspecialchars($genre['name']) ?>
+                                </label>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </form>
             <div class="mt-4">
@@ -157,7 +218,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <div class="card mb-3 d-flex flex-column h-100">
                                     <a href="details.php?id=<?= htmlspecialchars($book['id']) ?>" class="stretched-link"></a>
                                     <img src="<?= htmlspecialchars($book['cover']) ?>" class="card-img-top" alt="<?= htmlspecialchars($book['title']) ?>" />
-                                    <div class="card-body bg-secondary d-flex flex-column h-100">
+                                    <div class="card-body bg-dark opacity-75 d-flex flex-column h-100">
                                         <h5 class="card-title d-flex justify-content-between mb-auto"><?= htmlspecialchars($book['title']) ?></h5>
                                         <p class="card-text truncate-2-lines"><?= htmlspecialchars($book['description']) ?></p>
                                         <div class="d-flex justify-content-between mt-auto" style="font-weight: 500;">

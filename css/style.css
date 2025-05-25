@@ -11,6 +11,11 @@ a {
     border-color: #608BC1 !important;
 }
 
+.btn > .btn-primary {
+    background-color: #608BC1 !important;
+    border-color: #608BC1 !important;
+}
+
 .carousel-img {
     width: 100%;
     height: auto;
@@ -22,6 +27,15 @@ a {
 .card-img-top {
     height: 300px;
     object-fit: cover;
+}
+
+.custom-width {
+  max-width: 900px; /* Or any width you prefer */
+  width: 90%;
+}
+
+#genre-filters label {
+    cursor: pointer;
 }
 
 .text-current {

@@ -55,15 +55,18 @@ session_start();
               <a class="nav-link" href="login.php?redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>">Login</a>
             <?php endif; ?>
           </ul>
-          <form class="d-flex" role="search">
-            <input
-              class="form-control me-2"
-              type="search"
-              placeholder="Enter name"
-              aria-label="Search" />
-            <button class="btn btn-light" type="submit">
-              <img src="../img/icon-search.png" alt="" style="height: 20px" />
-            </button>
+          <form class="d-flex" role="search" action="search.php" method="GET">
+            <div class="input-group">
+              <input
+                class="form-control me-2"
+                type="search"
+                placeholder="Enter name"
+                name="q"
+                required />
+              <button class="btn btn-light" type="submit">
+                <img src="../img/icon-search.png" alt="Search icon" style="height: 20px" />
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -78,85 +81,121 @@ session_start();
       <h2 class="text-light p-3 pt-4">Popular</h2>
       <div class="carousel-inner">
 
-      <?php
+        <?php
         // Fetch top 5 most recently updated books
         $sql = "SELECT * FROM books ORDER BY view_count DESC LIMIT 5";
         $stmt = $pdo->query($sql);
         $books = $stmt->fetchAll(PDO::FETCH_ASSOC);
-      ?>
+        ?>
 
-      <?php if (!empty($books)) : ?>
-        <!-- First carousel item (active) -->
-        <div class="carousel-item active">
-          <a href="details.php?id=<?= htmlspecialchars($books[0]['id']) ?>" class="stretched-link"></a>
-          <div class="row row-cols-1 row-cols-lg-2 text-light align-carousel">
-            <div class="col col-lg-4">
+        <?php if (!empty($books)) : ?>
+          <!-- First carousel item (active) -->
+          <?php
+          // Get genres for the first book
+          $genre_stmt = $pdo->prepare("
+            SELECT g.name FROM books_genres bg
+            JOIN genres g ON bg.genre_id = g.id
+            WHERE bg.book_id = ?
+          ");
+          $genre_stmt->execute([$books[0]['id']]);
+          $genres = $genre_stmt->fetchAll(PDO::FETCH_COLUMN);
+          ?>
+          <div class="carousel-item active">
+            <a href="details.php?id=<?= htmlspecialchars($books[0]['id']) ?>" class="stretched-link"></a>
+            <div class="row row-cols-1 row-cols-lg-2 text-light align-carousel">
+              <div class="col col-lg-4">
+                <img src="<?= htmlspecialchars($books[0]['cover']) ?>" alt="<?= htmlspecialchars($books[0]['title']) ?>" class="img-fluid m-auto rounded-5 carousel-img">
+              </div>
+              <div class="col-lg-8">
+                <h4><?= htmlspecialchars($books[0]['title']) ?></h4>
 
-              <img src="<?= htmlspecialchars($books[0]['cover']) ?>" alt="<?= htmlspecialchars($books[0]['title']) ?>" class="img-fluid m-auto rounded-5 carousel-img">
-            </div>
-            <div class="col-lg-8">
-              <h4><?= htmlspecialchars($books[0]['title']) ?></h4>
-
-              <p class="lead text-truncate mb-0">
-                <?php
+                <p class="lead text-truncate mb-0">
+                  <?php
                   $author_stmt = $pdo->prepare("SELECT name FROM authors WHERE id = ?");
                   $author_stmt->execute([(int)$books[0]['author_id']]);
                   $author = $author_stmt->fetch(PDO::FETCH_ASSOC);
                   echo $author ? htmlspecialchars($author['name']) : '';
-                ?>
-              </p>
-
-              <p class="lead text-truncate">
-                <?php
-                  $illustrator_stmt = $pdo->prepare("SELECT name FROM illustrators WHERE id = ?");
-                  $illustrator_stmt->execute([(int)$books[0]['illustrator_id']]);
-                  $illustrator = $illustrator_stmt->fetch(PDO::FETCH_ASSOC);
-                  echo $illustrator ? htmlspecialchars($illustrator['name']) : '';
-                ?>
-              </p>
-
-              <p class="truncate-2-lines d-max-md-none"><?= htmlspecialchars($books[0]['description']) ?></p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Remaining carousel items -->
-        <?php foreach ($books as $i => $book): ?>
-          <?php if ($i === 0) {continue;} ?>
-          <div class="carousel-item">
-            <a href="details.php?id=<?= htmlspecialchars($book['id']) ?>" class="stretched-link"></a>
-            <div class="row row-cols-1 row-cols-lg-2 text-light align-carousel">
-              <div class="col col-lg-4">
-
-                <img src="<?= htmlspecialchars($book['cover']) ?>" alt="<?= htmlspecialchars($book['title']) ?>" class="img-fluid m-auto rounded-5 carousel-img">
-              </div>
-              <div class="col-lg-8">
-                <h4><?= htmlspecialchars($book['title']) ?></h4>
-
-                <p class="lead text-truncate mb-0">
-                  <?php
-                    $author_stmt = $pdo->prepare("SELECT name FROM authors WHERE id = ?");
-                    $author_stmt->execute([(int)$book['author_id']]);
-                    $author = $author_stmt->fetch(PDO::FETCH_ASSOC);
-                    echo $author ? htmlspecialchars($author['name']) : '';
                   ?>
                 </p>
 
                 <p class="lead text-truncate">
                   <?php
+                  $illustrator_stmt = $pdo->prepare("SELECT name FROM illustrators WHERE id = ?");
+                  $illustrator_stmt->execute([(int)$books[0]['illustrator_id']]);
+                  $illustrator = $illustrator_stmt->fetch(PDO::FETCH_ASSOC);
+                  echo $illustrator ? htmlspecialchars($illustrator['name']) : '';
+                  ?>
+                </p>
+
+                <!-- Show genres -->
+                <div class="d-flex flex-wrap gap-1 mb-2">
+                  <?php foreach ($genres as $genre): ?>
+                    <span class="badge text-bg-secondary fw-bold"><?= htmlspecialchars($genre) ?></span>
+                  <?php endforeach; ?>
+                </div>
+
+                <p class="truncate-2-lines d-max-md-none"><?= htmlspecialchars($books[0]['description']) ?></p>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Remaining carousel items -->
+          <?php
+          $genre_stmt = $pdo->prepare("
+            SELECT g.name FROM books_genres bg
+            JOIN genres g ON bg.genre_id = g.id
+            WHERE bg.book_id = ?
+          ");
+          ?>
+          <?php foreach ($books as $i => $book): ?>
+            <?php if ($i === 0) continue; ?>
+
+            <?php
+            $genre_stmt->execute([$book['id']]);
+            $genres = $genre_stmt->fetchAll(PDO::FETCH_COLUMN);
+            ?>
+            <div class="carousel-item">
+              <a href="details.php?id=<?= htmlspecialchars($book['id']) ?>" class="stretched-link"></a>
+              <div class="row row-cols-1 row-cols-lg-2 text-light align-carousel">
+                <div class="col col-lg-4">
+                  <img src="<?= htmlspecialchars($book['cover']) ?>" alt="<?= htmlspecialchars($book['title']) ?>" class="img-fluid m-auto rounded-5 carousel-img">
+                </div>
+                <div class="col-lg-8">
+                  <h4><?= htmlspecialchars($book['title']) ?></h4>
+
+                  <p class="lead text-truncate mb-0">
+                    <?php
+                    $author_stmt = $pdo->prepare("SELECT name FROM authors WHERE id = ?");
+                    $author_stmt->execute([(int)$book['author_id']]);
+                    $author = $author_stmt->fetch(PDO::FETCH_ASSOC);
+                    echo $author ? htmlspecialchars($author['name']) : '';
+                    ?>
+                  </p>
+
+                  <p class="lead text-truncate">
+                    <?php
                     $illustrator_stmt = $pdo->prepare("SELECT name FROM illustrators WHERE id = ?");
                     $illustrator_stmt->execute([(int)$book['illustrator_id']]);
                     $illustrator = $illustrator_stmt->fetch(PDO::FETCH_ASSOC);
                     echo $illustrator ? htmlspecialchars($illustrator['name']) : '';
-                  ?>
-                </p>
+                    ?>
+                  </p>
 
-                <p class="truncate-2-lines d-max-md-none"><?= htmlspecialchars($book['description']) ?></p>
+                  <!-- Show genres -->
+                  <div class="d-flex flex-wrap gap-1 mb-2">
+                    <?php foreach ($genres as $genre): ?>
+                      <span class="badge text-bg-secondary fw-bold"><?= htmlspecialchars($genre) ?></span>
+                    <?php endforeach; ?>
+                  </div>
+
+                  <p class="truncate-2-lines d-max-md-none"><?= htmlspecialchars($book['description']) ?></p>
+                </div>
               </div>
             </div>
-          </div>
-        <?php endforeach; ?>
-      <?php endif; ?>
+          <?php endforeach; ?>
+
+        <?php endif; ?>
         <button
           class="carousel-control-prev position-absolute d-none d-md-block"
           type="button"
@@ -175,7 +214,7 @@ session_start();
         </button>
       </div>
     </div>
-  
+
     <!-- Latest updates -->
     <div class="d-flex justify-content-between align-items-center mt-3">
       <h2 class="text-light p-3 pt-4">Latest updates</h2>
@@ -183,7 +222,7 @@ session_start();
     </div>
     <div class="row row-cols-md-2 row-cols-lg-3 g-2">
       <?php
-        $sql = "
+      $sql = "
           SELECT 
             b.id AS book_id,
             b.title AS book_title,
@@ -195,8 +234,8 @@ session_start();
           ORDER BY b.updated_at DESC
           LIMIT 18
         ";
-        $stmt = $pdo->query($sql);
-        $latestBooks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+      $stmt = $pdo->query($sql);
+      $latestBooks = $stmt->fetchAll(PDO::FETCH_ASSOC);
       ?>
 
       <?php foreach ($latestBooks as $book): ?>
@@ -213,18 +252,18 @@ session_start();
         </div>
       <?php endforeach; ?>
     </div>
-  
+
     <div class="row row-cols-1 row-cols-lg-2 mt-3">
 
       <!-- New titles -->
       <div class="col col-lg-8">
         <div class="d-flex justify-content-between align-items-center">
-            <h2 class="text-light p-3 pt-4">New titles</h2>
-            <a href="search.php?sort=desc-created" class="btn btn-info fs-5">View more</a>
-          </div>
+          <h2 class="text-light p-3 pt-4">New titles</h2>
+          <a href="search.php?sort=desc-created" class="btn btn-info fs-5">View more</a>
+        </div>
         <div class="row row-cols-md-3 row-cols-lg-4 g-2">
           <?php
-            $sql = "
+          $sql = "
               SELECT 
                 b.id AS book_id,
                 b.title AS book_title,
@@ -236,8 +275,8 @@ session_start();
               ORDER BY b.day_uploaded DESC
               LIMIT 12
             ";
-            $stmt = $pdo->query($sql);
-            $latestBooks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+          $stmt = $pdo->query($sql);
+          $latestBooks = $stmt->fetchAll(PDO::FETCH_ASSOC);
           ?>
 
           <?php foreach ($latestBooks as $book): ?>
@@ -262,7 +301,7 @@ session_start();
           <div class="row row-cols-md-2 row-cols-lg-1 g-2">
             <?php if (isset($_SESSION["user_id"])): ?>
               <?php
-                $sql = "
+              $sql = "
                   SELECT b.id AS book_id, b.title, b.cover, c.chapter_number, c.id AS chapter_id
                   FROM saved_books sb
                   JOIN books b ON sb.book_id = b.id
@@ -275,16 +314,16 @@ session_start();
                   ORDER BY sb.saved_at DESC
                   LIMIT 4
                 ";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([$_SESSION["user_id"]]);
-                $savedBooks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+              $stmt = $pdo->prepare($sql);
+              $stmt->execute([$_SESSION["user_id"]]);
+              $savedBooks = $stmt->fetchAll(PDO::FETCH_ASSOC);
               ?>
               <?php if (!empty($savedBooks)): ?>
                 <?php foreach ($savedBooks as $book): ?>
                   <div>
                     <div class="position-relative d-flex text-white bg-secondary bg-opacity-50 rounded-3">
                       <img src="<?= htmlspecialchars($book['cover'] ?? '../img/default-cover.jpg') ?>" alt=""
-                          class="w-25 rounded-3">
+                        class="w-25 rounded-3">
                       <div class="w-75 m-auto px-3">
                         <h5 class="card-title text-truncate"><?= htmlspecialchars($book['title']) ?></h5>
                         <p class="card-text">Chapter <?= htmlspecialchars($book['chapter_number'] ?? '0') ?></p>
@@ -305,7 +344,7 @@ session_start();
           <h2 class="text-light p-3 pt-4">Random</h2>
           <div class="row row-cols-md-2 row-cols-lg-1 g-2">
             <?php
-              $sql = "
+            $sql = "
                 SELECT b.id AS book_id, b.title, b.cover, c.chapter_number, c.id AS chapter_id
                 FROM books b
                 LEFT JOIN (
@@ -316,9 +355,9 @@ session_start();
                 ORDER BY RAND()
                 LIMIT 4
               ";
-              $stmt = $pdo->prepare($sql);
-              $stmt = $pdo->query($sql);
-              $randomBooks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo->query($sql);
+            $randomBooks = $stmt->fetchAll(PDO::FETCH_ASSOC);
             ?>
             <?php foreach ($randomBooks as $book): ?>
               <div>
@@ -335,7 +374,7 @@ session_start();
           </div>
         </div>
       </div>
-      
+
     </div>
   </main>
   <footer class="text-bg-secondary bg-opacity-50 text-center bottom-0 py-3">
@@ -351,7 +390,7 @@ session_start();
       <h4>© 2025 Book Hosting Website</h4>
     </div>
   </footer>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

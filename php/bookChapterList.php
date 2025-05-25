@@ -15,26 +15,6 @@ if (!isset($_GET['book_id'])) {
 $book_id = $_GET['book_id'];
 $user_id = $_SESSION['user_id'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = trim($_POST['chapterTitle'] ?? '');
-    $content = trim($_POST['content'] ?? '');
-
-    if ($title && $content) {
-        // Get next chapter number for this book
-        $stmt = $pdo->prepare("SELECT MAX(chapter_number) AS max_num FROM chapters WHERE book_id = ?");
-        $stmt->execute([$book_id]);
-        $max = $stmt->fetch(PDO::FETCH_ASSOC);
-        $next_chapter_number = ($max['max_num'] ?? 0) + 1;
-
-        // Insert new chapter
-        $stmt = $pdo->prepare("INSERT INTO chapters (book_id, chapter_number, title, content) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$book_id, $next_chapter_number, $title, $content]);
-    }
-
-    header("Location: bookChapterList.php?book_id=$book_id");
-    exit();
-}
-
 // Get book info
 $stmt = $pdo->prepare("SELECT * FROM books WHERE id = ? AND uploader_id = ?");
 $stmt->execute([$book_id, $_SESSION['user_id']]);
@@ -45,46 +25,119 @@ if (!$book) {
     exit();
 }
 
+// Insert and delete chapter
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Edit chapter
+    if (isset($_POST['action']) && $_POST['action'] === 'update') {
+        $chapterId = $_POST['chapterId'];
+        $title = $_POST['chapterTitle'];
+        $content = $_POST['content'];
+
+        $stmt = $pdo->prepare("UPDATE chapters SET title = ?, content = ? WHERE id = ?");
+        $success = $stmt->execute([$title, $content, $chapterId]);
+
+        if ($success) {
+            header("Location: bookChapterList.php?book_id=" . $_GET['book_id']);
+            exit();
+        } else {
+            echo "Update failed.";
+            exit();
+        }
+    }
+    // Add new chapter
+    elseif (!isset($_POST['action']) && isset($_POST['chapterTitle'])) {
+        $title = trim($_POST['chapterTitle'] ?? '');
+        $content = trim($_POST['content'] ?? '');
+
+        if ($title && $content) {
+            // Get next chapter number
+            $stmt = $pdo->prepare("SELECT MAX(chapter_number) AS max_num FROM chapters WHERE book_id = ?");
+            $stmt->execute([$book_id]);
+            $max = $stmt->fetch(PDO::FETCH_ASSOC);
+            $next_chapter_number = ($max['max_num'] ?? 0) + 1;
+
+            // Insert new chapter
+            $stmt = $pdo->prepare("INSERT INTO chapters (book_id, chapter_number, title, content) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$book_id, $next_chapter_number, $title, $content]);
+
+            header("Location: bookChapterList.php?book_id=$book_id");
+            exit();
+        }
+    }
+    // Delete chapter
+    elseif (isset($_POST['chapterId'])) {
+        $chapterId = intval($_POST['chapterId']);
+
+        // Verify chapter belongs to user's book
+        $stmt = $pdo->prepare("SELECT 1 FROM chapters c 
+                              JOIN books b ON c.book_id = b.id 
+                              WHERE c.id = ? AND b.uploader_id = ?");
+        $stmt->execute([$chapterId, $user_id]);
+
+        if ($stmt->fetch()) {
+            try {
+                $stmt = $pdo->prepare("DELETE FROM chapters WHERE id = ?");
+                $stmt->execute([$chapterId]);
+            } catch (PDOException $e) {
+                // Log error instead of showing to user
+                error_log("Error deleting chapter: " . $e->getMessage());
+            }
+        }
+
+        header("Location: bookChapterList.php?book_id=$book_id");
+        exit();
+    }
+}
+
+// if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+//     // Add new chapter
+//     if (isset($_POST['chapterTitle']) && !isset($_POST['action'])) {
+//         // existing insert logic...
+//     }
+
+//     // Edit chapter
+//     elseif (isset($_POST['action']) && $_POST['action'] === 'update') {
+//         $chapterId = $_POST['chapterId'];
+//         $title = $_POST['chapterTitle'];
+//         $content = $_POST['content'];
+
+//         $stmt = $pdo->prepare("UPDATE chapters SET title = ?, content = ? WHERE id = ?");
+//         $success = $stmt->execute([$title, $content, $chapterId]);
+
+//         if ($success) {
+//             header("Location: bookChapterList.php?book_id=" . $_GET['book_id']);
+//             exit();
+//         } else {
+//             echo "Update failed.";
+//             exit();
+//         }
+//     }
+
+//     // Delete chapter
+//     elseif (isset($_POST['chapterId'])) {
+//         // existing delete logic...
+//     }
+// }
+
+
 // Get chapters
 $stmt = $pdo->prepare("SELECT * FROM chapters WHERE book_id = ? ORDER BY id DESC");
 $stmt->execute([$book_id]);
 $chapters = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Delete chapter
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = trim($_POST['chapterTitle']);
-    $content = trim($_POST['content']);
-    $book_id = $_POST['book_id'];
-    $uploader_id = $_SESSION['user_id'];
-
-    if (empty($title) || empty($content) || empty($book_id)) {
-        header("Location: bookChapterList.php?book_id=$book_id");
-        exit();
-    }
-
-    $stmt = $pdo->prepare("INSERT INTO chapters (book_id, title, content) VALUES (?, ?, ?)");
-    $stmt->execute([$book_id, $title, $content]);
-
-    header("Location: bookChapterList.php?book_id=$book_id");
-    exit();
-}
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><?= $book['title'] ?> Chapters</title>
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    />
+        rel="stylesheet" />
     <link
         rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-    />
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/45.1.0/ckeditor5.css" />
     <link rel="stylesheet" href="../css/style.css" />
@@ -164,16 +217,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="list-group mt-3">
                 <?php foreach ($chapters as $chapter): ?>
                     <div class="list-group-item d-flex justify-content-between align-items-center bg-transparent text-white">
-                        <a href="read.php?chapter_id=<?= $chapter['id'] ?>" class="list-group-item-action link-info bg-transparent">
+                        <a href="read.php?book_id=<?= $book['id'] ?>&chapter_id=<?= $chapter['id'] ?>" class="list-group-item-action link-info bg-transparent">
                             <?= htmlspecialchars($chapter['title']) ?>
                         </a>
-                        <button class="ms-3 bg-transparent" onclick="deleteChapter('<?= $chapter['id'] ?>')">
-                            <i class="fa-solid fa-trash" style="color: #ff0000"></i>
-                        </button>
+                        <div class="ms-3 d-flex gap-2">
+                            <button class="ms-3 bg-transparent open-edit"
+                                data-id="<?= $chapter['id'] ?>"
+                                data-title="<?= htmlspecialchars($chapter['title'], ENT_QUOTES) ?>"
+                                data-content="<?= htmlspecialchars($chapter['content'], ENT_QUOTES) ?>">
+                                <i class="fa-solid fa-pen" style="color: #00bfff"></i>
+                            </button>
+                            <button class="ms-3 bg-transparent" onclick="deleteChapter('<?= $chapter['id'] ?>')">
+                                <i class="fa-solid fa-trash" style="color: #ff0000"></i>
+                            </button>
+                        </div>
                     </div>
                 <?php endforeach; ?>
             </div>
 
+            <!-- Shared Edit Chapter Modal -->
+            <div class="modal fade" id="editChapterModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg custom-width">
+                    <div class="modal-content bg-black">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editModalLabel">Edit Chapter</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="bookChapterList.php?book_id=<?= $book['id'] ?>" method="POST">
+                            <input type="hidden" name="chapterId" id="editChapterId">
+                            <input type="hidden" name="action" value="update">
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="editChapterTitle" class="form-label">Chapter Title</label>
+                                    <input
+                                        type="text"
+                                        class="form-control bg-dark text-white"
+                                        id="editChapterTitle"
+                                        name="chapterTitle"
+                                        required />
+                                </div>
+                                <div class="mb-3">
+                                    <label for="editContent" class="form-label">Chapter Content</label>
+                                    <textarea name="content" id="editContent"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Update Chapter</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             <!-- Delete confirm modal, has a hidden input with name/id of chapterId -->
             <div
@@ -202,7 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 data-bs-dismiss="modal">
                                 Cancel
                             </button>
-                            <form action="bookChapterList.html" method="GET">
+                            <form action="bookChapterList.php?book_id=<?= $book['id'] ?>" method="POST">
                                 <input type="hidden" name="chapterId" id="chapterId" />
                                 <button type="submit" class="btn btn-danger">Delete</button>
                             </form>
@@ -218,7 +313,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 tabindex="-1"
                 aria-labelledby="exampleModalLabel"
                 aria-hidden="true">
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-lg custom-width">
                     <div class="modal-content bg-black">
                         <div class="modal-header">
                             <h5 class="modal-title" id="exampleModalLabel">Add Chapter</h5>
@@ -286,11 +381,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             deleteModal.show();
         }
 
+        // Edit modal
+        function openEditModal(id, title, content) {
+            document.getElementById('editChapterId').value = id;
+            document.getElementById('editChapterTitle').value = title;
+
+            // Set content via CKEditor
+            if (window.editEditor) {
+                window.editEditor.setData(content);
+            } else {
+                document.getElementById('editContent').value = content;
+            }
+
+            const editModal = new bootstrap.Modal(document.getElementById("editChapterModal"));
+            editModal.show();
+        }
+
+
         window.addEventListener("DOMContentLoaded", () => {
 
             ClassicEditor
                 .create(document.querySelector("#content"), {
-                    
+
                     toolbar: [
                         "undo",
                         "redo",
@@ -307,8 +419,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 .catch(error => {
                     console.error("CKEditor error:", error);
                 });
-        });
 
+            ClassicEditor
+                .create(document.querySelector("#editContent"), {
+                    toolbar: ["undo", "redo", "|", "bold", "italic", "|", "bulletedList", "numberedList", "|", "blockQuote"]
+                })
+                .then(editor => {
+                    window.editEditor = editor;
+                })
+                .catch(error => console.error("CKEditor error:", error));
+
+            document.querySelectorAll(".open-edit").forEach(button => {
+                button.addEventListener("click", () => {
+                    const id = button.getAttribute("data-id");
+                    const title = button.getAttribute("data-title");
+                    const content = button.getAttribute("data-content");
+
+                    openEditModal(id, title, content);
+                });
+            });
+
+
+        });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>

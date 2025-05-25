@@ -28,16 +28,40 @@ $stmt->execute([$user['id']]);
 $saved_books = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Avatar update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['avatar'])) {
-    $avatarUrl = trim($_POST['avatar']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $avatarUrl = '';
+    
+    // Handle file upload first if provided
+    if (isset($_FILES['avatar_file']) && $_FILES['avatar_file']['error'] === UPLOAD_ERR_OK) {
+        $uploadDir = '../img/';
+        $tmp = $_FILES['avatar_file']['tmp_name'];
+        $originalName = basename($_FILES['avatar_file']['name']);
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-    if (!empty($avatarUrl)) {
+        if (in_array($ext, $allowed)) {
+            $newFileName = 'avatar_' . htmlspecialchars($_SESSION['user_id']) . '.' . $ext;
+            $destination = $uploadDir . $newFileName;
+
+            if (move_uploaded_file($tmp, $destination)) {
+                $avatarUrl = $destination;
+            }
+        }
+    }
+
+    // Fallback to URL input
+    if (!$avatarUrl && !empty($_POST['avatar_url'])) {
+        $avatarUrl = $_POST['avatar_url'];
+    }
+
+    if ($avatarUrl) {
         $stmt = $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?");
         $stmt->execute([$avatarUrl, $_SESSION['user_id']]);
         header("Location: profile.php");
         exit();
     }
 }
+
 
 // Pagination
 // Defaults
@@ -196,26 +220,29 @@ $total_saved_pages = ceil($total_saved / $limit);
                                 data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                         </div>
-                        <form action="profile.php" method="POST" id="avatarForm">
+                        <form action="profile.php" method="POST" id="avatarForm" enctype="multipart/form-data">
                             <div class="modal-body">
                                 <label for="newAvatarUrl" class="form-label">New Avatar URL</label>
                                 <input
                                     type="url"
-                                    class="form-control bg-secondary text-white border-0"
+                                    class="form-control bg-secondary text-white border-0 mb-3"
                                     id="newAvatarUrl"
-                                    name="avatar"
-                                    required />
+                                    name="avatar_url"
+                                    placeholder="https://example.com/avatar.jpg" />
+
+                                <div class="text-center text-muted mb-2">— or —</div>
+
+                                <label for="avatarFile" class="form-label">Upload Image File</label>
+                                <input
+                                    type="file"
+                                    class="form-control bg-secondary text-white border-0"
+                                    id="avatarFile"
+                                    name="avatar_file"
+                                    accept="image/*" />
                             </div>
                             <div class="modal-footer">
-                                <button
-                                    type="button"
-                                    class="btn btn-outline-light"
-                                    data-bs-dismiss="modal">
-                                    Cancel
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    Save
-                                </button>
+                                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save</button>
                             </div>
                         </form>
                     </div>
@@ -301,7 +328,7 @@ $total_saved_pages = ceil($total_saved / $limit);
                         <?php foreach ($uploaded_books as $book): ?>
                             <div class="col">
                                 <a href="details.php?id=<?= $book['id'] ?>" class="text-decoration-none text-white">
-                                    <div class="card bg-dark shadow-sm h-100">
+                                    <div class="card bg-secondary bg-opacity-50 shadow-sm h-100">
                                         <img src="<?= htmlspecialchars($book['cover']) ?>"
                                             class="card-img-top"
                                             alt="<?= htmlspecialchars($book['title']) ?>"
@@ -337,7 +364,7 @@ $total_saved_pages = ceil($total_saved / $limit);
                         <?php foreach ($saved_books as $book): ?>
                             <div class="col">
                                 <a href="details.php?id=<?= $book['id'] ?>" class="text-decoration-none text-white">
-                                    <div class="card bg-dark shadow-sm h-100">
+                                    <div class="card bg-secondary bg-opacity-50 shadow-sm h-100">
                                         <img src="<?= htmlspecialchars($book['cover']) ?>"
                                             class="card-img-top"
                                             alt="<?= htmlspecialchars($book['title']) ?>"

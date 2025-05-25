@@ -164,11 +164,16 @@ if (isset($_SESSION['user_id'])) {
                     <h2 class="mb-3"><?= htmlspecialchars($details['book_title']) ?></h2>
                     <p class="truncate-2-lines d-max-md-none"><?= htmlspecialchars($details['description']) ?></p>
 
-                    <div id="carousel-tags" class="d-flex flex-wrap gap-2 mb-3">
-                        <?php foreach ($genres as $genre): ?>
-                            <span class="badge text-bg-secondary fw-bold py-1 px-2"><?= htmlspecialchars($genre) ?></span>
-                        <?php endforeach; ?>
-                    </div>
+                    <?php if (!empty($genres)): ?>
+                        <div class="mb-3">
+                            <strong>Genres:</strong>
+                            <div class="d-flex flex-wrap gap-2 mt-1">
+                                <?php foreach ($genres as $genre): ?>
+                                    <span class="badge bg-info text-dark fw-semibold"><?= htmlspecialchars($genre) ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
 
                     <?php
                     $start_read_stmt = $pdo->prepare("
@@ -181,6 +186,7 @@ if (isset($_SESSION['user_id'])) {
                     $start_read_stmt->execute([$book_id]);
                     $start_read = $start_read_stmt->fetch(PDO::FETCH_ASSOC);
                     ?>
+
 
                     <ul class="list-unstyled mb-0">
                         <li><strong>Author:</strong> <?= htmlspecialchars($details['author_name'] ?? '') ?></li>
