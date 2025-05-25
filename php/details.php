@@ -153,23 +153,24 @@ if (isset($_SESSION['user_id'])) {
     <main class="container min-vh-100">
         <div class="my-4">
             <div class="row g-4 align-items-start">
-                <div class="col-md-3">
+                <div class="col-md-3 mt-5">
                     <img
                         src="<?= htmlspecialchars($details['cover']) ?>"
                         alt="<?= htmlspecialchars($details['book_title']) ?>"
                         class="img-fluid rounded shadow" />
                 </div>
 
-                <div class="col-md-9 text-white">
+                <div class="col-md-9 text-white mt-5">
                     <h2 class="mb-3"><?= htmlspecialchars($details['book_title']) ?></h2>
                     <p class="truncate-2-lines d-max-md-none"><?= htmlspecialchars($details['description']) ?></p>
 
+                    <!-- Show genres -->
                     <?php if (!empty($genres)): ?>
                         <div class="mb-3">
                             <strong>Genres:</strong>
                             <div class="d-flex flex-wrap gap-2 mt-1">
                                 <?php foreach ($genres as $genre): ?>
-                                    <span class="badge bg-info text-dark fw-semibold"><?= htmlspecialchars($genre) ?></span>
+                                    <span class="badge bg-3 text-1 fw-semibold"><?= htmlspecialchars($genre) ?></span>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -188,12 +189,15 @@ if (isset($_SESSION['user_id'])) {
                     ?>
 
 
+                    <!-- Show author, illustrator, uploader -->
                     <ul class="list-unstyled mb-0">
                         <li><strong>Author:</strong> <?= htmlspecialchars($details['author_name'] ?? '') ?></li>
                         <li><strong>Illustrator:</strong> <?= htmlspecialchars($details['illustrator_name'] ?? '') ?></li>
                         <li><strong>Uploader:</strong> <?= htmlspecialchars($details['uploader_name'] ?? 'anonymous') ?></li>
                     </ul>
+                    <!-- Start reading -->
                     <a href="read.php?book_id=<?= $book_id ?>&chapter_id=<?= htmlspecialchars($start_read['id']) ?>" class="btn btn-primary mt-4"> 📖 Start Reading </a>
+                    <!-- Save -->
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <button
                             id="save-btn"
@@ -214,10 +218,10 @@ if (isset($_SESSION['user_id'])) {
                 <ol class="list-group">
                     <?php foreach ($chapters as $chapter): ?>
                         <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-start px-0 border-bottom py-3">
-                            <a class="ms-3 me-auto fw-bold" href="read.php?book_id=<?= $book_id ?>&chapter_id=<?= htmlspecialchars($chapter['id']) ?>">
+                            <a class="ms-3 text-4 me-auto fw-bold" href="read.php?book_id=<?= $book_id ?>&chapter_id=<?= htmlspecialchars($chapter['id']) ?>">
                                 <span>Ch.<?= htmlspecialchars($chapter['chapter_number']) ?> -</span> <?= htmlspecialchars($chapter['title']) ?>
                             </a>
-                            <span class="badge text-bg-primary rounded-pill">
+                            <span class="badge text-white bg-3 rounded-pill">
                                 <?= time_elapsed_string($chapter['day_uploaded']) ?>
                             </span>
                         </li>

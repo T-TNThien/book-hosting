@@ -147,7 +147,7 @@ $totalPages = ceil($totalResults / $limit);
 
     <main class="container mb-5 text-white">
         <div class="min-vh-100 py-4">
-            <h1>
+            <h1 class="mt-5 mb-3">
                 Searching
                 <span class="text-secondary"><?= $q ? (htmlspecialchars($q)) : '' ?></span>
             </h1>
@@ -169,7 +169,7 @@ $totalPages = ceil($totalResults / $limit);
                     <button
                         type="button"
                         class="btn btn-outline-light"
-                        onclick="document.getElementById('genre-filters').classList.toggle('d-none')">
+                        onclick="document.getElementById('genre-filters').classList.toggle('expanded')">
                         Filter Tags
                     </button>
                     <!-- Sort -->
@@ -190,7 +190,7 @@ $totalPages = ceil($totalResults / $limit);
                 </div>
 
                 <!-- Genre filters -->
-                <div id="genre-filters" class="d-none mt-3 bg-dark p-3 rounded">
+                <div id="genre-filters" class="genre-filter-collapsed mt-3 bg-dark m-3 rounded">
                     <div class="row">
                         <?php foreach ($all_genres as $genre): ?>
                             <div class="col-6 col-md-3">
