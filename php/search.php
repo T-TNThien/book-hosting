@@ -189,7 +189,7 @@ $totalPages = ceil($totalResults / $limit);
                     </button>
                 </div>
 
-                <!-- Genre filters -->
+                <!-- Genre list -->
                 <div id="genre-filters" class="genre-filter-collapsed mt-3 bg-dark m-3 rounded">
                     <div class="row">
                         <?php foreach ($all_genres as $genre): ?>

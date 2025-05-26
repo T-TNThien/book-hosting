@@ -171,13 +171,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </header>
     <main class="container mb-5 text-white">
         <div class="min-vh-100 py-4">
-            <a class="btn btn-outline-secondary mb-3" href="profile.php">Back to profile</a>
-            <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex justify-content-between align-items-center mt-5 mb-3">
                 <h1>Uploaded titles</h1>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
                     <i class="fa-solid fa-plus"></i> Add new title
                 </button>
             </div>
+            <a class="btn btn-outline-secondary mb-5" href="profile.php">Back to profile</a>
 
             <!-- Error message -->
             <?php if (isset($_GET['error'])): ?>
